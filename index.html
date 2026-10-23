@@ -668,9 +668,7 @@ const Spiral = {
 };
 
 const Art = (() => {
-  const b64 = s => "data:image/svg+xml;base64," + btoa(s);
-
-  const face = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+  const faceSVG = `<svg viewBox="0 0 400 500" class="big-eye" style="width: min(85vw, 500px); height: auto; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10;">
     <rect width="400" height="500" fill="#000"/>
     <path d="M 80 120 C 60 250 80 420 200 470 C 320 420 340 250 320 120 Z" fill="#fff" stroke="#000" stroke-width="10"/>
     <g stroke="#000" stroke-width="3" opacity="0.8">
@@ -681,7 +679,6 @@ const Art = (() => {
     </g>
     <ellipse cx="140" cy="190" rx="45" ry="35" fill="#000"/>
     <ellipse cx="140" cy="190" rx="38" ry="28" fill="#fff"/>
-    <path d="M 140 190 m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0" fill="none" stroke="#000" stroke-width="5"/>
     <circle cx="140" cy="190" r="6" fill="#000"/>
     <ellipse cx="260" cy="180" rx="50" ry="40" fill="#000"/>
     <ellipse cx="260" cy="180" rx="44" ry="34" fill="#fff"/>
@@ -703,23 +700,11 @@ const Art = (() => {
     </g>
   </svg>`;
 
-  const eye = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120"><path d="M3 60C45 6 155 6 197 60 155 114 45 114 3 60Z" fill="#fff" stroke="#000" stroke-width="6"/><circle cx="100" cy="60" r="36" fill="#000"/><circle cx="100" cy="60" r="12" fill="#fff"/><circle cx="100" cy="60" r="4" fill="#000"/></svg>`;
-  
-  const hand = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220" width="120" height="220"><g fill="#fff" stroke="#000" stroke-width="5"><path d="M28 220V128C28 106 40 98 60 98S92 106 92 128V220Z"/><rect x="29" y="22" width="13" height="92" rx="6.5" transform="rotate(-14 35 114)"/><rect x="44" y="6" width="13" height="104" rx="6.5" transform="rotate(-4 50 110)"/><rect x="60" y="4" width="13" height="106" rx="6.5" transform="rotate(4 66 110)"/><rect x="76" y="18" width="13" height="96" rx="6.5" transform="rotate(15 82 114)"/></g></svg>`;
-
-  // PASTIKAN face JUGA DIEKSPOR DI SINI:
-  return { face: b64(face), eye: b64(eye), hand: b64(hand) };
+  return { faceSVG };
 })();
 
 const Scare = (() => {
   let root, flood, msg, again, t1 = 0, t2 = 0;
-  const img = (src, cls) => { 
-    const i = new Image(); 
-    i.src = src; 
-    i.className = cls; 
-    i.draggable = false; 
-    return i; 
-  };
 
   function init() {
     root = $("#scare"); flood = $("#flood"); msg = $("#scareMsg"); again = $("#scareAgain");
@@ -729,31 +714,14 @@ const Scare = (() => {
   function run() {
     const strong = Settings.get().scare;
     clearTimeout(t1); clearTimeout(t2);
-    flood.replaceChildren(); msg.hidden = true; again.hidden = true;
+    flood.innerHTML = ""; msg.hidden = true; again.hidden = true;
     root.classList.toggle("soft", !strong);
     root.hidden = false;
     document.body.classList.add("noscroll");
 
     if (strong) {
-      const frag = document.createDocumentFragment();
-      
-      frag.append(img(Art.face, "big-eye"));
-
-      for (let i = 0; i < 30; i++) {
-        const el = img(i % 2 === 0 ? Art.eye : Art.hand, "sprite");
-        el.style.cssText = `--s:${(90 + Math.random() * 260) | 0}px;left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 100).toFixed(1)}%;--r:${(Math.random() * 360) | 0}deg;--d:${(0.1 + Math.random() * 1.2).toFixed(2)}s`;
-        frag.append(el);
-      }
-
-      for (let i = 0; i < 8; i++) {
-        const up = img(Art.hand, "reach"), down = img(Art.hand, "reach");
-        const w = 140 + Math.random() * 100;
-        up.style.cssText = `--s:${w | 0}px;--from:110%;--d:${(0.2 + Math.random() * 0.8).toFixed(2)}s;left:${i * 13}%;bottom:-4%`;
-        down.style.cssText = `--s:${w | 0}px;--from:-110%;--d:${(0.3 + Math.random() * 0.8).toFixed(2)}s;left:${i * 13 + 5}%;top:-4%;transform:rotate(180deg)`;
-        frag.append(up, down);
-      }
-
-      flood.append(frag);
+      // Inject elemen SVG langsung ke DOM
+      flood.innerHTML = Art.faceSVG;
       Sound.screech();
     } else {
       Sound.thud();
@@ -766,7 +734,7 @@ const Scare = (() => {
   function dismiss() {
     clearTimeout(t1); clearTimeout(t2);
     Sound.haltScare();
-    root.hidden = true; flood.replaceChildren();
+    root.hidden = true; flood.innerHTML = "";
     document.body.classList.remove("noscroll");
     Timer.note("You crawl back. It remembers your face.", 9000);
   }
