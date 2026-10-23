@@ -255,35 +255,73 @@ const Spiral = {
 };
 
 const Art = (() => {
-  const faceSVG = `<svg viewBox="0 0 400 500" class="big-eye">
-    <rect width="400" height="500" fill="#000"/>
-    <path d="M 80 120 C 60 250 80 420 200 470 C 320 420 340 250 320 120 Z" fill="#fff" stroke="#000" stroke-width="10"/>
-    <g stroke="#000" stroke-width="3" opacity="0.8">
-      <line x1="90" y1="180" x2="130" y2="210"/><line x1="85" y1="200" x2="135" y2="230"/>
-      <line x1="310" y1="180" x2="270" y2="210"/><line x1="315" y1="200" x2="265" y2="230"/>
-      <line x1="160" y1="420" x2="240" y2="420"/><line x1="150" y1="435" x2="250" y2="435"/>
-      <line x1="170" y1="450" x2="230" y2="450"/>
+  // SVG Wajah Horor Berarsir Kasar & Mata Distorsi Spiral
+  const faceSVG = `<svg viewBox="0 0 500 600" class="cursed-jumpscare-svg">
+    <!-- Background Hitam Pekat dengan Arsir Tinta -->
+    <rect width="500" height="600" fill="#000"/>
+    
+    <!-- Garis Speedlines Manga di Latar Belakang -->
+    <g stroke="#fff" stroke-width="2" opacity="0.4">
+      <line x1="0" y1="0" x2="250" y2="300"/><line x1="500" y1="0" x2="250" y2="300"/>
+      <line x1="0" y1="600" x2="250" y2="300"/><line x1="500" y1="600" x2="250" y2="300"/>
+      <line x1="250" y1="0" x2="250" y2="300"/><line x1="0" y1="300" x2="250" y2="300"/>
+      <line x1="500" y1="300" x2="250" y2="300"/><line x1="250" y1="600" x2="250" y2="300"/>
     </g>
-    <ellipse cx="140" cy="190" rx="45" ry="35" fill="#000"/>
-    <ellipse cx="140" cy="190" rx="38" ry="28" fill="#fff"/>
-    <circle cx="140" cy="190" r="6" fill="#000"/>
-    <ellipse cx="260" cy="180" rx="50" ry="40" fill="#000"/>
-    <ellipse cx="260" cy="180" rx="44" ry="34" fill="#fff"/>
-    <circle cx="260" cy="180" r="14" fill="#000"/>
-    <circle cx="260" cy="180" r="4" fill="#fff"/>
-    <path d="M 80 150 Q 140 180 190 160" stroke="#000" stroke-width="8" fill="none"/>
-    <path d="M 320 130 Q 260 170 210 150" stroke="#000" stroke-width="8" fill="none"/>
-    <path d="M 120 300 Q 200 240 280 300 Q 200 460 120 300 Z" fill="#000" stroke="#000" stroke-width="6"/>
-    <g fill="#fff">
-      <polygon points="135,285 145,315 155,285"/>
-      <polygon points="160,280 172,320 184,280"/>
-      <polygon points="190,275 200,325 210,275"/>
-      <polygon points="216,280 228,320 240,280"/>
-      <polygon points="245,285 255,315 265,285"/>
-      <polygon points="145,345 155,315 165,345"/>
-      <polygon points="175,355 185,310 195,355"/>
-      <polygon points="205,355 215,310 225,355"/>
-      <polygon points="235,345 245,315 255,345"/>
+
+    <!-- Kontur Wajah Pucat & Terdistorsi -->
+    <path d="M 100 150 C 70 300 90 500 250 560 C 410 500 430 300 400 150 C 370 50 130 50 100 150 Z" fill="#fff" stroke="#000" stroke-width="12"/>
+    
+    <!-- Tekstur Arsir Hitam di Pipi & Dahi (Style Junji Ito) -->
+    <g stroke="#000" stroke-width="3" opacity="0.85">
+      <line x1="110" y1="220" x2="160" y2="260"/><line x1="105" y1="240" x2="165" y2="280"/>
+      <line x1="100" y1="260" x2="170" y2="300"/><line x1="390" y1="220" x2="340" y2="260"/>
+      <line x1="395" y1="240" x2="335" y2="280"/><line x1="400" y1="260" x2="330" y2="300"/>
+      <!-- Arsir Dahi -->
+      <line x1="180" y1="100" x2="180" y2="150"/><line x1="200" y1="90" x2="200" y2="155"/>
+      <line x1="220" y1="85" x2="220" y2="160"/><line x1="250" y1="80" x2="250" y2="160"/>
+      <line x1="280" y1="85" x2="280" y2="160"/><line x1="300" y1="90" x2="300" y2="155"/>
+      <line x1="320" y1="100" x2="320" y2="150"/>
+    </g>
+
+    <!-- Mata Kiri: Rongga Hitam dengan Pupil Spiral Melilit -->
+    <ellipse cx="175" cy="230" rx="50" ry="40" fill="#000"/>
+    <path d="M 175 230 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0 M 175 230 m -20 0 a 20 20 0 1 0 40 0 a 20 20 0 1 0 -40 0 M 175 230 m -10 0 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0" fill="none" stroke="#fff" stroke-width="4"/>
+
+    <!-- Mata Kanan: Terbelalak Cemas dengan Pembuluh Darah -->
+    <ellipse cx="325" cy="220" rx="55" ry="45" fill="#000"/>
+    <ellipse cx="325" cy="220" rx="48" ry="38" fill="#fff"/>
+    <!-- Spiral Pupil -->
+    <path d="M 325 220 m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0 M 325 220 m -8 0 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0" fill="none" stroke="#000" stroke-width="5"/>
+    <!-- Urat Mata -->
+    <g stroke="#000" stroke-width="2" fill="none">
+      <path d="M 280 220 Q 300 215 310 220"/><path d="M 370 220 Q 350 225 340 220"/>
+      <path d="M 325 180 Q 325 195 320 205"/><path d="M 325 260 Q 325 245 330 235"/>
+    </g>
+
+    <!-- Alis Bawah Menghitam -->
+    <path d="M 110 180 Q 175 220 230 190" stroke="#000" stroke-width="12" fill="none"/>
+    <path d="M 390 170 Q 325 210 270 180" stroke="#000" stroke-width="12" fill="none"/>
+
+    <!-- Hidung Terdistorsi -->
+    <path d="M 250 220 L 235 310 L 265 310 Z" fill="#000"/>
+
+    <!-- Mulut Menganga Lebar (Screaming Void) -->
+    <path d="M 140 370 Q 250 300 360 370 Q 250 570 140 370 Z" fill="#000" stroke="#000" stroke-width="8"/>
+    
+    <!-- Gigi Runcing Sharp Manga -->
+    <g fill="#fff" stroke="#000" stroke-width="2">
+      <!-- Gigi Atas -->
+      <polygon points="160,355 175,395 190,355"/>
+      <polygon points="195,350 210,400 225,350"/>
+      <polygon points="230,345 250,410 270,345"/>
+      <polygon points="275,350 290,400 305,350"/>
+      <polygon points="310,355 325,395 340,355"/>
+      <!-- Gigi Bawah -->
+      <polygon points="170,425 185,385 200,425"/>
+      <polygon points="205,435 220,380 235,435"/>
+      <polygon points="240,440 250,380 260,440"/>
+      <polygon points="265,435 280,380 295,435"/>
+      <polygon points="300,425 315,385 330,425"/>
     </g>
   </svg>`;
 
@@ -313,8 +351,8 @@ const Scare = (() => {
       Sound.thud();
     }
 
-    t1 = setTimeout(() => { msg.hidden = false; }, strong ? 1200 : 300);
-    t2 = setTimeout(() => { again.hidden = false; again.focus({ preventScroll: true }); }, strong ? 3500 : 1500);
+    t1 = setTimeout(() => { msg.hidden = false; }, strong ? 800 : 300);
+    t2 = setTimeout(() => { again.hidden = false; again.focus({ preventScroll: true }); }, strong ? 3000 : 1500);
   }
 
   function dismiss() {

@@ -210,59 +210,84 @@ body.panic .ci-btn{animation-duration:.45s}
 body.tremor #app,body.tremor #login{animation:tremor .34s linear infinite}
 body.tremor.panic #app,body.tremor.panic #login{animation-duration:.14s}
 
-/* JUMPSCARE OVERLAY CSS - HIGH Z-INDEX PREVENT OVERLAY ISSUES */
-.scare{
-  position:fixed !important;
-  inset:0 !important;
-  width:100vw !important;
-  height:100vh !important;
-  background:#000 !important;
-  overflow:hidden !important;
-  z-index:999999 !important;
+/* JUMPSCARE OVERLAY MANGA STYLE */
+.scare {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+  overflow: hidden !important;
+  z-index: 999999 !important;
 }
-.flood{
-  position:absolute !important;
-  inset:0 !important;
-  display:flex !important;
-  justify-content:center !important;
-  align-items:center !important;
-  z-index:1000000 !important;
-  animation:scareShake .12s steps(2) infinite;
+
+.flood {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 1000000 !important;
+  animation: violentJumpscare 0.06s steps(2) infinite;
 }
-.flood svg{
-  width:min(85vw, 500px) !important;
-  height:auto !important;
-  display:block !important;
-  filter:drop-shadow(0 0 25px #ffffff);
+
+.cursed-jumpscare-svg {
+  width: min(92vw, 650px) !important;
+  height: auto !important;
+  display: block !important;
+  filter: drop-shadow(0 0 35px #ffffff) contrast(150%);
+  animation: zoomPulse 0.15s ease-out forwards;
 }
-.scare.soft .flood{display:none !important}
-.scare-ui{
-  position:absolute !important;
-  inset:0 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:30px !important;
-  padding:20px !important;
-  z-index:1000001 !important;
-  pointer-events:none !important;
-  background:transparent !important;
+
+.scare-ui {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding-bottom: 60px !important;
+  z-index: 1000001 !important;
+  pointer-events: none !important;
+  background: transparent !important;
 }
-.scare-msg{
-  margin:0;
-  background:#000;
-  border:5px solid #fff;
-  padding:.4em .8em;
-  text-align:center;
-  font-size:clamp(28px,6.4vw,76px);
-  line-height:1.1;
-  max-width:92vw;
-  animation:msgIn .3s ease-out;
+
+.scare-msg {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  border: 6px solid #fff;
+  padding: .5em 1em;
+  text-align: center;
+  font-family: var(--serif);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  font-size: clamp(22px, 5vw, 48px);
+  line-height: 1.1;
+  box-shadow: 8px 8px 0px #fff;
+  animation: msgIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.scare-ui .btn{pointer-events:auto;font-size:1rem}
-@keyframes msgIn{from{transform:scale(1.6);opacity:0}to{transform:none;opacity:1}}
-@keyframes scareShake{0%{transform:translate(0,0)}50%{transform:translate(6px,-5px)}100%{transform:translate(-5px,4px)}}
+
+.scare-ui .btn {
+  pointer-events: auto;
+  margin-top: 15px;
+}
+
+/* Animasi Guncangan Muka & Zoom Instan */
+@keyframes zoomPulse {
+  0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+  50% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes violentJumpscare {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-12px, 8px) scale(1.03); }
+  50% { transform: translate(10px, -10px) scale(0.98); }
+  75% { transform: translate(-8px, -6px) scale(1.02); }
+  100% { transform: translate(12px, 10px) scale(1); }
+}
 
 @media (prefers-reduced-motion:reduce){
   body.tremor #app,body.tremor #login,.stack.cursed .task,.stack.cursed .txt,.ghost,.flood,.ci-btn,.login-spiral{animation:none!important}
