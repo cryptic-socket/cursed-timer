@@ -669,19 +669,62 @@ const Spiral = {
 
 const Art = (() => {
   const b64 = s => "data:image/svg+xml;base64," + btoa(s);
-  const eye = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120"><path d="M3 60C45 6 155 6 197 60 155 114 45 114 3 60Z" fill="#fff" stroke="#000" stroke-width="4"/><g stroke="#000" stroke-width="1.6" fill="none"><path d="M16 58l34-4M20 68l32-8M184 58l-34-4M180 68l-32-8M70 18l8 14M100 12v16M130 18l-8 14M72 104l8-14M100 108V92M128 104l-8-14"/></g><circle cx="100" cy="60" r="36" fill="#000"/><circle cx="100" cy="60" r="36" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="1 4"/><circle cx="100" cy="60" r="9" fill="#fff"/><circle cx="104" cy="55" r="3" fill="#000"/></svg>`;
-  const hand = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220"><g fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"><path d="M28 220V128C28 106 40 98 60 98S92 106 92 128V220Z"/><rect x="29" y="22" width="13" height="92" rx="6.5" transform="rotate(-14 35 114)"/><rect x="44" y="6" width="13" height="104" rx="6.5" transform="rotate(-4 50 110)"/><rect x="60" y="4" width="13" height="106" rx="6.5" transform="rotate(4 66 110)"/><rect x="76" y="18" width="13" height="96" rx="6.5" transform="rotate(15 82 114)"/><rect x="6" y="104" width="13" height="70" rx="6.5" transform="rotate(-52 12 150)"/></g><g stroke="#000" stroke-width="2" fill="none"><path d="M33 60h10M48 52h10M63 50h10M79 60h10M30 90h8M46 90h8M62 90h8M78 90h8M45 150c10 8 20 8 30 0M40 180c14 8 26 8 40 0"/></g><g fill="#000"><ellipse cx="32" cy="28" rx="3.5" ry="5"/><ellipse cx="49" cy="12" rx="3.5" ry="5"/><ellipse cx="66" cy="10" rx="3.5" ry="5"/><ellipse cx="83" cy="24" rx="3.5" ry="5"/></g></svg>`;
-  return { eye: b64(eye), hand: b64(hand) };
+
+  const face = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+    <rect width="400" height="500" fill="#000"/>
+    <path d="M 80 120 C 60 250 80 420 200 470 C 320 420 340 250 320 120 Z" fill="#fff" stroke="#000" stroke-width="10"/>
+    <g stroke="#000" stroke-width="3" opacity="0.8">
+      <line x1="90" y1="180" x2="130" y2="210"/><line x1="85" y1="200" x2="135" y2="230"/>
+      <line x1="310" y1="180" x2="270" y2="210"/><line x1="315" y1="200" x2="265" y2="230"/>
+      <line x1="160" y1="420" x2="240" y2="420"/><line x1="150" y1="435" x2="250" y2="435"/>
+      <line x1="170" y1="450" x2="230" y2="450"/>
+    </g>
+    <ellipse cx="140" cy="190" rx="45" ry="35" fill="#000"/>
+    <ellipse cx="140" cy="190" rx="38" ry="28" fill="#fff"/>
+    <path d="M 140 190 m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0" fill="none" stroke="#000" stroke-width="5"/>
+    <circle cx="140" cy="190" r="6" fill="#000"/>
+    <ellipse cx="260" cy="180" rx="50" ry="40" fill="#000"/>
+    <ellipse cx="260" cy="180" rx="44" ry="34" fill="#fff"/>
+    <circle cx="260" cy="180" r="14" fill="#000"/>
+    <circle cx="260" cy="180" r="4" fill="#fff"/>
+    <path d="M 80 150 Q 140 180 190 160" stroke="#000" stroke-width="8" fill="none"/>
+    <path d="M 320 130 Q 260 170 210 150" stroke="#000" stroke-width="8" fill="none"/>
+    <path d="M 120 300 Q 200 240 280 300 Q 200 460 120 300 Z" fill="#000" stroke="#000" stroke-width="6"/>
+    <g fill="#fff">
+      <polygon points="135,285 145,315 155,285"/>
+      <polygon points="160,280 172,320 184,280"/>
+      <polygon points="190,275 200,325 210,275"/>
+      <polygon points="216,280 228,320 240,280"/>
+      <polygon points="245,285 255,315 265,285"/>
+      <polygon points="145,345 155,315 165,345"/>
+      <polygon points="175,355 185,310 195,355"/>
+      <polygon points="205,355 215,310 225,355"/>
+      <polygon points="235,345 245,315 255,345"/>
+    </g>
+  </svg>`;
+
+  const eye = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120"><path d="M3 60C45 6 155 6 197 60 155 114 45 114 3 60Z" fill="#fff" stroke="#000" stroke-width="6"/><circle cx="100" cy="60" r="36" fill="#000"/><circle cx="100" cy="60" r="12" fill="#fff"/><circle cx="100" cy="60" r="4" fill="#000"/></svg>`;
+  
+  const hand = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220" width="120" height="220"><g fill="#fff" stroke="#000" stroke-width="5"><path d="M28 220V128C28 106 40 98 60 98S92 106 92 128V220Z"/><rect x="29" y="22" width="13" height="92" rx="6.5" transform="rotate(-14 35 114)"/><rect x="44" y="6" width="13" height="104" rx="6.5" transform="rotate(-4 50 110)"/><rect x="60" y="4" width="13" height="106" rx="6.5" transform="rotate(4 66 110)"/><rect x="76" y="18" width="13" height="96" rx="6.5" transform="rotate(15 82 114)"/></g></svg>`;
+
+  return { face: b64(face), eye: b64(eye), hand: b64(hand) };
 })();
 
 const Scare = (() => {
   let root, flood, msg, again, t1 = 0, t2 = 0;
-  const img = (src, cls) => { const i = new Image(); i.src = src; i.alt = ""; i.className = cls; i.draggable = false; return i; };
+  const img = (src, cls) => { 
+    const i = new Image(); 
+    i.src = src; 
+    i.className = cls; 
+    i.draggable = false; 
+    return i; 
+  };
 
   function init() {
     root = $("#scare"); flood = $("#flood"); msg = $("#scareMsg"); again = $("#scareAgain");
     again.addEventListener("click", dismiss);
   }
+
   function run() {
     const strong = Settings.get().scare;
     clearTimeout(t1); clearTimeout(t2);
@@ -689,29 +732,36 @@ const Scare = (() => {
     root.classList.toggle("soft", !strong);
     root.hidden = false;
     document.body.classList.add("noscroll");
+
     if (strong) {
       const frag = document.createDocumentFragment();
-      frag.append(img(Art.eye, "big-eye"));
-      for (let i = 0; i < 46; i++) {
-        const el = img(i % 3 === 0 ? Art.eye : Art.hand, "sprite");
-        el.style.cssText = `--s:${(70 + Math.random() * 340) | 0}px;left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 100).toFixed(1)}%;--r:${(Math.random() * 360) | 0}deg;--d:${(0.15 + Math.random() * 1.9).toFixed(2)}s`;
+      
+      frag.append(img(Art.face, "big-eye"));
+
+      for (let i = 0; i < 30; i++) {
+        const el = img(i % 2 === 0 ? Art.eye : Art.hand, "sprite");
+        el.style.cssText = `--s:${(90 + Math.random() * 260) | 0}px;left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 100).toFixed(1)}%;--r:${(Math.random() * 360) | 0}deg;--d:${(0.1 + Math.random() * 1.2).toFixed(2)}s`;
         frag.append(el);
       }
-      for (let i = 0; i < 9; i++) {                       // hands clawing up from below and down from above
+
+      for (let i = 0; i < 8; i++) {
         const up = img(Art.hand, "reach"), down = img(Art.hand, "reach");
-        const w = 150 + Math.random() * 120;
-        up.style.cssText = `--s:${w | 0}px;--from:110%;--d:${(0.3 + Math.random() * 1.2).toFixed(2)}s;left:${i * 11 - 2}%;bottom:-4%`;
-        down.style.cssText = `--s:${w | 0}px;--from:-110%;--d:${(0.5 + Math.random() * 1.2).toFixed(2)}s;left:${i * 11 + 4}%;top:-4%;transform:rotate(180deg)`;
+        const w = 140 + Math.random() * 100;
+        up.style.cssText = `--s:${w | 0}px;--from:110%;--d:${(0.2 + Math.random() * 0.8).toFixed(2)}s;left:${i * 13}%;bottom:-4%`;
+        down.style.cssText = `--s:${w | 0}px;--from:-110%;--d:${(0.3 + Math.random() * 0.8).toFixed(2)}s;left:${i * 13 + 5}%;top:-4%;transform:rotate(180deg)`;
         frag.append(up, down);
       }
+
       flood.append(frag);
       Sound.screech();
     } else {
       Sound.thud();
     }
-    t1 = setTimeout(() => { msg.hidden = false; }, strong ? 1500 : 300);
-    t2 = setTimeout(() => { again.hidden = false; again.focus({ preventScroll: true }); }, strong ? 4200 : 1500);
+
+    t1 = setTimeout(() => { msg.hidden = false; }, strong ? 1200 : 300);
+    t2 = setTimeout(() => { again.hidden = false; again.focus({ preventScroll: true }); }, strong ? 3500 : 1500);
   }
+
   function dismiss() {
     clearTimeout(t1); clearTimeout(t2);
     Sound.haltScare();
@@ -719,6 +769,7 @@ const Scare = (() => {
     document.body.classList.remove("noscroll");
     Timer.note("You crawl back. It remembers your face.", 9000);
   }
+
   return { init, run };
 })();
 
