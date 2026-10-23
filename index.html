@@ -26,10 +26,40 @@
 <meta name="theme-color" content="#000000">
 <title>Cursed Time · 呪われた時間</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='black'/><path d='M32 32A4 4 0 0 1 36 28A8 8 0 0 1 40 36A12 12 0 0 1 28 44A16 16 0 0 1 12 28A20 20 0 0 1 32 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
+
 <style>
+  
 /*
 CURSED TIME — pure manga ink: #000 and #fff, halftone dots, rough lines
 */
+
+#scare {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #000000 !important;
+  z-index: 999999 !important;
+  overflow: hidden !important;
+}
+
+#flood {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 10 !important;
+}
+
+#flood svg {
+  width: min(85vw, 500px) !important;
+  height: auto !important;
+  display: block !important;
+  filter: drop-shadow(0 0 25px #ffffff);
+}
 
 :root{
   --ink:#fff; --void:#000; --ash:#bdbdbd; --soot:#7a7a7a;
@@ -276,6 +306,7 @@ body.tremor.panic #app,body.tremor.panic #login{animation-duration:.14s}
   .sprite{scale:1}
 }
 </style>
+
 </head>
 <body>
 
@@ -720,7 +751,6 @@ const Scare = (() => {
     document.body.classList.add("noscroll");
 
     if (strong) {
-      // Inject elemen SVG langsung ke DOM
       flood.innerHTML = Art.faceSVG;
       Sound.screech();
     } else {
