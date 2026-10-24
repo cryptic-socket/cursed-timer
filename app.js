@@ -255,77 +255,263 @@ const Spiral = {
 };
 
 const Art = (() => {
-  // SVG Wajah Horor Berarsir Kasar & Mata Distorsi Spiral
-  const faceSVG = `<svg viewBox="0 0 500 600" class="cursed-jumpscare-svg">
-    <!-- Background Hitam Pekat dengan Arsir Tinta -->
-    <rect width="500" height="600" fill="#000"/>
-    
-    <!-- Garis Speedlines Manga di Latar Belakang -->
-    <g stroke="#fff" stroke-width="2" opacity="0.4">
-      <line x1="0" y1="0" x2="250" y2="300"/><line x1="500" y1="0" x2="250" y2="300"/>
-      <line x1="0" y1="600" x2="250" y2="300"/><line x1="500" y1="600" x2="250" y2="300"/>
-      <line x1="250" y1="0" x2="250" y2="300"/><line x1="0" y1="300" x2="250" y2="300"/>
-      <line x1="500" y1="300" x2="250" y2="300"/><line x1="250" y1="600" x2="250" y2="300"/>
-    </g>
+  /* ---------------------------------------------------------------------------
+     JUMPSCARE ART — a wall of hand-inked eyes: heavy lid bands, tapered lashes,
+     cross-hatching, bloodshot veins, striated irises. Drawn procedurally into ONE
+     standalone SVG string: no images, no base64, no filters, no external files.
+     Seeded RNG => the same nightmare every time. Change SEED for a different one.
+  --------------------------------------------------------------------------- */
+  const SEED = 1999, W = 1600, H = 1000;
+  let rnd = mulberry32(SEED);                                      // re-seeded inside build()
+  const rr = (a, b) => a + (b - a) * rnd();
+  const ri = (a, b) => Math.floor(rr(a, b + 1));
+  const q = v => Math.round(v * 10) / 10;                         // 1 decimal keeps the string small
+  const pt = p => q(p[0]) + " " + q(p[1]);
+  const add = (p, v, k) => [p[0] + v[0] * k, p[1] + v[1] * k];
+  const seg = (a, b) => "M" + pt(a) + "L" + pt(b);
+  const arc = (a, b, k) => { const m = [(a[0] + b[0]) / 2 + (b[1] - a[1]) * k, (a[1] + b[1]) / 2 - (b[0] - a[0]) * k]; return "M" + pt(a) + "Q" + pt(m) + " " + pt(b); };
+  const poly = pts => pts.map((p, i) => (i ? "L" : "M") + pt(p)).join("");
 
-    <!-- Kontur Wajah Pucat & Terdistorsi -->
-    <path d="M 100 150 C 70 300 90 500 250 560 C 410 500 430 300 400 150 C 370 50 130 50 100 150 Z" fill="#fff" stroke="#000" stroke-width="12"/>
-    
-    <!-- Tekstur Arsir Hitam di Pipi & Dahi (Style Junji Ito) -->
-    <g stroke="#000" stroke-width="3" opacity="0.85">
-      <line x1="110" y1="220" x2="160" y2="260"/><line x1="105" y1="240" x2="165" y2="280"/>
-      <line x1="100" y1="260" x2="170" y2="300"/><line x1="390" y1="220" x2="340" y2="260"/>
-      <line x1="395" y1="240" x2="335" y2="280"/><line x1="400" y1="260" x2="330" y2="300"/>
-      <!-- Arsir Dahi -->
-      <line x1="180" y1="100" x2="180" y2="150"/><line x1="200" y1="90" x2="200" y2="155"/>
-      <line x1="220" y1="85" x2="220" y2="160"/><line x1="250" y1="80" x2="250" y2="160"/>
-      <line x1="280" y1="85" x2="280" y2="160"/><line x1="300" y1="90" x2="300" y2="155"/>
-      <line x1="320" y1="100" x2="320" y2="150"/>
-    </g>
+  const bez = (c, t) => {
+    const u = 1 - t, a = u * u * u, b = 3 * u * u * t, d = 3 * u * t * t, e = t * t * t;
+    return [a * c[0][0] + b * c[1][0] + d * c[2][0] + e * c[3][0], a * c[0][1] + b * c[1][1] + d * c[2][1] + e * c[3][1]];
+  };
+  const tang = (c, t) => {
+    const u = 1 - t;
+    const x = 3 * u * u * (c[1][0] - c[0][0]) + 6 * u * t * (c[2][0] - c[1][0]) + 3 * t * t * (c[3][0] - c[2][0]);
+    const y = 3 * u * u * (c[1][1] - c[0][1]) + 6 * u * t * (c[2][1] - c[1][1]) + 3 * t * t * (c[3][1] - c[2][1]);
+    const l = Math.hypot(x, y) || 1;
+    return [x / l, y / l];
+  };
+  const nrm = t => [t[1], -t[0]];                                  // upper lid: up. lower lid: down (outward both)
 
-    <!-- Mata Kiri: Rongga Hitam dengan Pupil Spiral Melilit -->
-    <ellipse cx="175" cy="230" rx="50" ry="40" fill="#000"/>
-    <path d="M 175 230 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0 M 175 230 m -20 0 a 20 20 0 1 0 40 0 a 20 20 0 1 0 -40 0 M 175 230 m -10 0 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0" fill="none" stroke="#fff" stroke-width="4"/>
+  /** a wobbling copy of a lid curve, pushed `off` away from it — hand-drawn lines never run true */
+  const line = (c, t0, t1, n, off, jit) => {
+    const pts = [];
+    for (let j = 0; j <= n; j++) {
+      const t = t0 + (t1 - t0) * j / n;
+      pts.push(add(bez(c, t), nrm(tang(c, t)), off + (rnd() - .5) * jit));
+    }
+    return pts;
+  };
+  /** tapered ink hair: wide root, needle tip, a little curl */
+  const sliver = (b, dir, len, w, side, curl) => {
+    const tip = add(add(b, dir, len), side, curl), ctl = add(add(b, dir, len * .55), side, curl * .35);
+    return "M" + pt(add(b, side, w)) + "Q" + pt(add(ctl, side, w * .45)) + " " + pt(tip) + "Q" + pt(add(ctl, side, -w * .45)) + " " + pt(add(b, side, -w)) + "Z";
+  };
+  const lashes = (c, n, len, t0, t1, sgn, upper) => {
+    let d = "";
+    const ts = Array.from({ length: n }, () => t0 + (t1 - t0) * rnd()).sort((x, y) => x - y);
+    for (const t of ts) {
+      const p = bez(c, t), tn = tang(c, t), nn = nrm(tn);
+      const phi = upper ? (t - .22) * 1.55 + (rnd() - .5) * .55 : rr(.05, .55);   // lashes fan outward
+      const dir = [nn[0] * Math.cos(phi) + sgn * tn[0] * Math.sin(phi), nn[1] * Math.cos(phi) + sgn * tn[1] * Math.sin(phi)];
+      const l = len * rr(.5, 1.4) * (upper ? .45 + .9 * Math.sin(Math.PI * Math.min(1, t * 1.05)) : 1);
+      d += sliver(p, dir, l, Math.max(.7, l * rr(.045, .085)), [tn[0] * sgn, tn[1] * sgn], l * rr(.05, .3));
+    }
+    return d;
+  };
 
-    <!-- Mata Kanan: Terbelalak Cemas dengan Pembuluh Darah -->
-    <ellipse cx="325" cy="220" rx="55" ry="45" fill="#000"/>
-    <ellipse cx="325" cy="220" rx="48" ry="38" fill="#fff"/>
-    <!-- Spiral Pupil -->
-    <path d="M 325 220 m -18 0 a 18 18 0 1 0 36 0 a 18 18 0 1 0 -36 0 M 325 220 m -8 0 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0" fill="none" stroke="#000" stroke-width="5"/>
-    <!-- Urat Mata -->
-    <g stroke="#000" stroke-width="2" fill="none">
-      <path d="M 280 220 Q 300 215 310 220"/><path d="M 370 220 Q 350 225 340 220"/>
-      <path d="M 325 180 Q 325 195 320 205"/><path d="M 325 260 Q 325 245 330 235"/>
-    </g>
+  function eye(i, o) {
+    const a = o.w / 2, hu = o.hu * o.w, hl = o.hl * o.w, tilt = o.tilt, sk = o.skew * a;
+    const L = [-a, a * tilt], Rt = [a, -a * tilt * .7];
+    const up = [L, [-a * .4 + sk, -hu * 1.34], [a * .4 + sk, -hu * 1.34], Rt];
+    const lo = [Rt, [a * .36 + sk * .6, hl * 1.34], [-a * .36 + sk * .6, hl * 1.34], L];
+    const yU = bez(up, .5)[1], yL = bez(lo, .5)[1], open = yL - yU, mid = (yU + yL) / 2;
+    const lid = Math.max(2.4, a * .048) * o.ink, hair = Math.max(1, a * .0065);
 
-    <!-- Alis Bawah Menghitam -->
-    <path d="M 110 180 Q 175 220 230 190" stroke="#000" stroke-width="12" fill="none"/>
-    <path d="M 390 170 Q 325 210 270 180" stroke="#000" stroke-width="12" fill="none"/>
+    // gaze: every iris drifts toward the middle of the screen — they all stare at *you*
+    const wx = W / 2 - o.x, wy = H / 2 - o.y, ang = -o.rot * Math.PI / 180;
+    let lx = wx * Math.cos(ang) - wy * Math.sin(ang);
+    const ly = wx * Math.sin(ang) + wy * Math.cos(ang);
+    if (o.flip) lx = -lx;
+    const gl = Math.hypot(lx, ly) || 1;
+    const ix = Math.max(-a * .33, Math.min(a * .33, lx / gl * a * .28 * o.gaze));
+    const iy = mid + ly / gl * open * .1 * o.gaze - open * .03;
+    const r = open * o.iris, pr = r * o.pupil, cx = q(ix), cy = q(iy), id = "e" + i;
 
-    <!-- Hidung Terdistorsi -->
-    <path d="M 250 220 L 235 310 L 265 310 Z" fill="#000"/>
+    const shape = "M" + pt(L) + "C" + pt(up[1]) + " " + pt(up[2]) + " " + pt(Rt) + "C" + pt(lo[1]) + " " + pt(lo[2]) + " " + pt(L) + "Z";
+    let s = `<clipPath id="${id}"><path d="${shape}"/></clipPath><clipPath id="${id}i"><circle cx="${cx}" cy="${cy}" r="${q(r)}"/></clipPath>`;
+    s += `<path d="${shape}" fill="#fff"/>`;
 
-    <!-- Mulut Menganga Lebar (Screaming Void) -->
-    <path d="M 140 370 Q 250 300 360 370 Q 250 570 140 370 Z" fill="#000" stroke="#000" stroke-width="8"/>
-    
-    <!-- Gigi Runcing Sharp Manga -->
-    <g fill="#fff" stroke="#000" stroke-width="2">
-      <!-- Gigi Atas -->
-      <polygon points="160,355 175,395 190,355"/>
-      <polygon points="195,350 210,400 225,350"/>
-      <polygon points="230,345 250,410 270,345"/>
-      <polygon points="275,350 290,400 305,350"/>
-      <polygon points="310,355 325,395 340,355"/>
-      <!-- Gigi Bawah -->
-      <polygon points="170,425 185,385 200,425"/>
-      <polygon points="205,435 220,380 235,435"/>
-      <polygon points="240,440 250,380 260,440"/>
-      <polygon points="265,435 280,380 295,435"/>
-      <polygon points="300,425 315,385 330,425"/>
-    </g>
-  </svg>`;
+    /* ---- inside the eyeball (clipped to the lids) ---- */
+    // cross-hatch shadow gathering in the corners (parallel strokes, crossed by a second set) + under the lid
+    let hat = "";
+    for (let c = 0; c < 2; c++) {
+      const t0 = c ? .7 : 0, t1 = c ? 1 : .3, n = Math.round(a / 7) + 10, sl = (c ? -1 : 1) * rr(.4, .65);
+      for (let pass = 0; pass < 2; pass++) for (let k = 0, m = pass ? Math.round(n * .55) : n; k < m; k++) {
+        const t = rr(t0, t1), p = bez(up, t), tn = tang(up, t), inw = nrm(tn).map(v => -v);
+        const len = hu * (pass ? rr(.2, .5) : rr(.3, .85)), an = pass ? -sl * rr(.7, 1.2) : sl + rr(-.08, .08);
+        const dir = [inw[0] * Math.cos(an) + tn[0] * Math.sin(an), inw[1] * Math.cos(an) + tn[1] * Math.sin(an)];
+        hat += arc(p, add(p, dir, len), rr(-.04, .04));
+      }
+    }
+    for (let k = 0, n = Math.round(a / 6) + 6; k < n; k++) {         // the lid's cast shadow: short combed strokes
+      const t = rr(.12, .88), p = bez(up, t), inw = nrm(tang(up, t)).map(v => -v), len = hu * rr(.1, .3);
+      hat += seg(p, add(p, inw, len));
+    }
+    for (let k = 0, n = Math.round(a / 8) + 4; k < n; k++) {         // and a little under the lower lid
+      const t = rnd() < .5 ? rr(0, .2) : rr(.8, 1), p = bez(lo, t), len = hl * rr(.3, .65), tn = tang(lo, t), inw = nrm(tn).map(v => -v);
+      hat += seg(p, [p[0] + inw[0] * len + tn[0] * len * .4, p[1] + inw[1] * len + tn[1] * len * .4]);
+    }
+    // bloodshot veins creeping from both corners toward the iris
+    let vn = "";
+    for (let k = 0, n = Math.round(a / 22) + 3; k < n; k++) {
+      const left = k % 2 === 0, from = left ? L : Rt;
+      const to = [ix + (left ? -1 : 1) * r * rr(.95, 1.25), iy + rr(-.5, .5) * r], pts = [add(from, [left ? 1 : -1, 0], a * .03)];
+      for (let j = 1; j <= 6; j++) { const f = j / 6; pts.push([from[0] + (to[0] - from[0]) * f + (rnd() - .5) * a * .05, from[1] + (to[1] - from[1]) * f + (rnd() - .5) * a * .06]); }
+      vn += poly(pts) + seg(pts[3], add(pts[3], [rr(-1, 1), rr(-1, 1)], a * rr(.05, .13)));
+    }
 
-  return { faceSVG };
+    // the iris — five different kinds of wrong
+    const ring = `<circle cx="${cx}" cy="${cy}" r="${q(r)}" fill="none" stroke="#000" stroke-width="${q(Math.max(2, r * .09))}"/>`;
+    let ir = "", shade = `<ellipse cx="${cx}" cy="${q(iy - r * .62)}" rx="${q(r * 1.15)}" ry="${q(r * .62)}" fill="#000" opacity=".55"/>`;
+    const fine = `stroke="#000" stroke-width="${q(Math.max(.8, r * .014))}" stroke-linecap="round" fill="none"`;
+    if (o.style === "radial") {
+      let d = "";
+      for (let k = 0, n = Math.round(r * 1.2) + 46; k < n; k++) {
+        const t = rnd() * 6.2832, r0 = pr * rr(1.05, 1.7), r1 = r * rr(.6, .97);
+        d += seg([ix + Math.cos(t) * r0, iy + Math.sin(t) * r0], [ix + Math.cos(t) * r1, iy + Math.sin(t) * r1]);
+      }
+      ir = `<circle cx="${cx}" cy="${cy}" r="${q(r)}" fill="#fff"/><path d="${d}" ${fine}/><circle cx="${cx}" cy="${cy}" r="${q(pr * 1.9)}" fill="none" stroke="#000" stroke-width="${q(r * .035)}" stroke-dasharray="${q(r * .05)} ${q(r * .03)}"/>`;
+    } else if (o.style === "hatch") {
+      let d = "";
+      for (let k = -2 * r; k <= 2 * r; k += Math.max(3.2, r * .05)) d += seg([ix - r + k, iy - r], [ix + r + k, iy + r]);
+      for (let k = -2 * r; k <= 2 * r; k += Math.max(4.4, r * .07)) d += seg([ix + r + k, iy - r], [ix - r + k, iy + r]);
+      ir = `<circle cx="${cx}" cy="${cy}" r="${q(r)}" fill="#fff"/><path d="${d}" ${fine}/>`;
+    } else if (o.style === "spiral") {
+      let d = "";
+      const turns = 3.6;
+      for (let th = .2; th < turns * 6.2832; th += .16) { const rad = r * .97 * th / (turns * 6.2832) + (rnd() - .5) * r * .012; d += (d ? "L" : "M") + pt([ix + Math.cos(th) * rad, iy + Math.sin(th) * rad]); }
+      ir = `<circle cx="${cx}" cy="${cy}" r="${q(r)}" fill="#000"/><path d="${d}" fill="none" stroke="#fff" stroke-width="${q(r * .065)}" stroke-linecap="round"/>`;
+      shade = "";
+    } else {                                                        // "solid": black glass with pale flecks
+      let d = "";
+      for (let k = 0, n = Math.round(r * .9) + 24; k < n; k++) {
+        const t = rnd() * 6.2832, r0 = r * rr(.42, .7), r1 = r * rr(.78, .95);
+        d += seg([ix + Math.cos(t) * r0, iy + Math.sin(t) * r0], [ix + Math.cos(t) * r1, iy + Math.sin(t) * r1]);
+      }
+      ir = `<circle cx="${cx}" cy="${cy}" r="${q(r)}" fill="#000"/><path d="${d}" stroke="#fff" stroke-width="${q(Math.max(.8, r * .012))}" stroke-linecap="round" opacity=".7" fill="none"/><circle cx="${cx}" cy="${cy}" r="${q(r * .8)}" fill="none" stroke="#fff" stroke-width="${q(Math.max(.8, r * .01))}" opacity=".5"/>`;
+      shade = "";
+    }
+    const pupil = o.style === "solid" || o.style === "spiral" ? "" : `<circle class="pupil" cx="${cx}" cy="${cy}" r="${q(pr)}" fill="#000"/>`;
+    const hr = Math.max(2.4, r * .17);
+    const shine = `<ellipse cx="${q(ix + r * .3)}" cy="${q(iy - r * .3)}" rx="${q(hr)}" ry="${q(hr * .7)}" fill="#fff" transform="rotate(-25 ${q(ix + r * .3)} ${q(iy - r * .3)})"/><circle cx="${q(ix - r * .26)}" cy="${q(iy + r * .3)}" r="${q(hr * .38)}" fill="#fff"/>`;
+    const dart = `style="--dx:${q(r * .2)}px;--dy:${q(r * .09)}px;--dl:${q(rr(0, 1.6))}s"`;
+
+    // shadow the upper lid throws across the eyeball
+    const sh = [], shb = [];
+    for (let j = 0; j <= 26; j++) { const t = j / 26, p = bez(up, t), inw = nrm(tang(up, t)).map(v => -v); sh.push(p); shb.push(add(p, inw, hu * .3 * Math.pow(Math.sin(Math.PI * t), .8) * rr(.8, 1.1))); }
+
+    s += `<g clip-path="url(#${id})"><path d="${hat}" stroke="#000" stroke-width="${q(hair * 1.1)}" stroke-linecap="round" fill="none" opacity=".9"/><path d="${vn}" stroke="#000" stroke-width="${q(hair * .9)}" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".8"/>`
+      + `<g class="iris" ${dart}><g clip-path="url(#${id}i)">${ir}${shade}</g>${ring}${pupil}${shine}</g>`
+      + `<path d="${poly(sh) + poly(shb.reverse()).replace("M", "L")}Z" fill="#000" opacity=".72"/></g>`;
+
+    /* ---- lids, lashes, creases, brow ---- */
+    const top = [], bot = [];                                       // heavy, tapered upper-lid ink band
+    for (let j = 0; j <= 28; j++) {
+      const t = j / 28, p = bez(up, t), n = nrm(tang(up, t)), th = lid * (.25 + Math.pow(Math.sin(Math.PI * t), .6)) * rr(.88, 1.12);
+      top.push(add(p, n, th)); bot.push(add(p, n, -th * .18));
+    }
+    s += `<path d="${poly(top) + poly(bot.reverse()).replace("M", "L")}Z" fill="#000"/>`;
+    const wt = tang(up, 1), wd = [wt[0] * Math.cos(-.3) - wt[1] * Math.sin(-.3), wt[0] * Math.sin(-.3) + wt[1] * Math.cos(-.3)], wn = nrm(wt);   // the flicked wing
+    const wtip = add(Rt, wd, a * rr(.11, .22)), wmid = add(add(Rt, wd, a * .08), wn, lid * .6);
+    s += `<path d="M${pt(add(Rt, wn, lid * 1.3))}Q${pt(wmid)} ${pt(wtip)}Q${pt(add(wmid, wn, -lid * 1.1))} ${pt(add(Rt, wn, -lid * .25))}Z" fill="#000"/>`;
+    s += `<path d="${lashes(up, Math.round(a / 8) + 16, a * .12, .02, .99, 1, true)}" fill="#000"/>`;
+    s += `<path d="${lashes(lo, Math.round(a / 16) + 6, a * .055, .1, .92, -1, false)}" fill="#000"/>`;
+
+    const lw = Math.max(1.8, a * .012);
+    s += `<path d="${poly(line(lo, 0, 1, 24, 0, hair * 1.2))}" fill="none" stroke="#000" stroke-width="${q(lw)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<path d="${poly(line(lo, .12, .88, 18, -hl * .12, hair))}" fill="none" stroke="#000" stroke-width="${q(lw * .5)}" stroke-linecap="round" opacity=".8"/>`;
+    s += `<ellipse cx="${q(L[0] + a * .07)}" cy="${q(L[1])}" rx="${q(a * .045)}" ry="${q(a * .026)}" fill="#000" opacity=".85"/>`;
+
+    // eye-bag arcs + hatching beneath the lower lid
+    const bag1 = line(lo, .14, .86, 16, hl * .6 + a * .02, hl * .07), bag2 = line(lo, .24, .76, 14, hl * 1.1 + a * .03, hl * .09);
+    let bh = "";
+    for (let k = 0, n = Math.round(a / 16) + 5; k < n; k++) { const j = ri(2, bag1.length - 3), p = bag1[j]; bh += arc(p, [p[0] + hl * rr(.25, .5), p[1] + hl * rr(.18, .42)], rr(-.1, .1)); }
+    s += `<path d="${poly(bag1) + poly(bag2) + bh}" fill="none" stroke="#000" stroke-width="${q(hair * 1.05)}" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>`;
+
+    // double-lid crease + hatched brow
+    s += `<path d="${poly(line(up, .08, .96, 22, lid + hu * .55, hu * .06))}" fill="none" stroke="#000" stroke-width="${q(lid * .5)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<path d="${poly(line(up, .3, .85, 14, lid + hu * .8, hu * .07))}" fill="none" stroke="#000" stroke-width="${q(lid * .28)}" stroke-linecap="round"/>`;
+    if (o.brow) {
+      let bd = "";
+      const bl = line(up, 0, 1, 30, hu * 1.25 + lid * 2.5 + a * .06, hu * .1);
+      for (let k = 0, n = Math.round(a / 1.7) + 34; k < n; k++) {
+        const f = rnd() * (bl.length - 2), j = Math.floor(f), p0 = bl[j], p1 = bl[j + 1];
+        const bt = [p1[0] - p0[0], p1[1] - p0[1]], bn = Math.hypot(bt[0], bt[1]) || 1, tn = [bt[0] / bn, bt[1] / bn], up2 = [tn[1], -tn[0]];
+        const base = add([p0[0] + (p1[0] - p0[0]) * (f - j), p0[1] + (p1[1] - p0[1]) * (f - j)], up2, rr(-.4, .5) * hu * .8);
+        const dir = [tn[0] * Math.cos(.45) + up2[0] * Math.sin(.45), tn[1] * Math.cos(.45) + up2[1] * Math.sin(.45)];
+        bd += sliver(base, dir, a * rr(.05, .12), Math.max(.8, a * .0068), up2, a * rr(.008, .024));
+      }
+      s += `<path d="${bd}" fill="#000"/>`;
+    }
+
+    const cls = "eye" + (o.blink ? " blink" : "") + (o.big ? " big" : "");
+    return `<g transform="translate(${q(o.x)} ${q(o.y)}) rotate(${o.rot})${o.flip ? " scale(-1 1)" : ""}"><g class="${cls}" style="--in:${q(o.delay)}s;--bl:${q(rr(0, 2.5))}s">${s}</g></g>`;
+  }
+
+  /** builds the sheet once, on first use (keeps page load light) */
+  function build() {
+    rnd = mulberry32(SEED);
+    const spec = (x, y, w, rot, style, e) => Object.assign({
+      x, y, w, rot, style, hu: rr(.17, .22), hl: rr(.085, .12), tilt: rr(-.05, .09), skew: rr(-.25, .25),
+      pupil: rr(.3, .42), iris: rr(.58, .7), ink: 1, gaze: 1, brow: rnd() < .55, blink: rnd() < .6, flip: false, big: false
+    }, e || {});
+
+    // distorted placement: crowding the edges, sideways eyes, one enormous stare dead centre
+    const layout = [
+      spec(150, 150, 360, -18, "hatch", { brow: true }),
+      spec(1450, 120, 420, 14, "solid"),
+      spec(520, 55, 260, 7, "spiral", { brow: false }),
+      spec(1100, 40, 250, -9, "radial"),
+      spec(800, 80, 330, 2, "solid", { brow: false }),
+      spec(60, 520, 270, 84, "solid"),
+      spec(1545, 560, 290, -88, "radial"),
+      spec(170, 880, 440, 12, "radial"),
+      spec(1430, 905, 430, -11, "solid", { flip: true }),
+      spec(820, 935, 340, 3, "hatch"),
+      spec(470, 965, 230, -14, "spiral", { brow: false }),
+      spec(1140, 965, 230, 10, "solid"),
+      spec(330, 440, 150, -30, "solid"),
+      spec(1295, 430, 160, 28, "hatch"),
+      spec(800, 500, 920, -2, "radial", { big: true, hu: .2, hl: .115, iris: .5, pupil: .13, ink: 1.25, gaze: 0, brow: true, blink: false })
+    ];
+    layout.forEach((o, i) => { o.delay = o.big ? 0 : .05 + i * .05; });
+
+    /* ---- the sheet: paper, ink hatching on the edges, hair-like tendrils, spatter, vignette ---- */
+    let edge = "", dots = "", dots2 = "", hairs = "";
+    for (let c = 0; c < 30; c++) {                                  // clumps of parallel ink strokes hugging the border
+      const side = ri(0, 3), t = rnd(), tilt = rr(-.55, .55), n = ri(7, 20), gap = rr(5, 10), base = rr(40, 170);
+      const o = side === 0 ? [t * W, 0] : side === 1 ? [t * W, H] : side === 2 ? [0, t * H] : [W, t * H];
+      const d = side === 0 ? [0, 1] : side === 1 ? [0, -1] : side === 2 ? [1, 0] : [-1, 0], al = side < 2 ? [1, 0] : [0, 1];
+      for (let k = 0; k < n; k++) {
+        const p = add(o, al, (k - n / 2) * gap + rr(-2, 2)), len = base * rr(.6, 1.15) * (1 - Math.abs(k - n / 2) / n * .7);
+        edge += arc(p, add(add(p, d, len), al, len * tilt), rr(-.06, .06));
+      }
+    }
+    for (let k = 0; k < 260; k++) {
+      const p = "M" + pt([rnd() * W, rnd() * H]) + "h.1";
+      if (rnd() < .7) dots += p; else dots2 += p;
+    }
+    for (let k = 0; k < 9; k++) {
+      const side = ri(0, 3), t = rnd(), p = side === 0 ? [t * W, -10] : side === 1 ? [t * W, H + 10] : side === 2 ? [-10, t * H] : [W + 10, t * H];
+      const e = [W / 2 + rr(-340, 340), H / 2 + rr(-200, 200)];
+      hairs += `<path d="M${pt(p)}C${pt([p[0] + (e[0] - p[0]) * .3 + rr(-220, 220), p[1] + (e[1] - p[1]) * .3 + rr(-220, 220)])} ${pt([p[0] + (e[0] - p[0]) * .7 + rr(-220, 220), p[1] + (e[1] - p[1]) * .7 + rr(-220, 220)])} ${pt(e)}" stroke-width="${q(rr(1.4, 4))}"/>`;
+    }
+
+    return `<svg class="cursed-jumpscare-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">`
+      + `<defs><radialGradient id="vg" cx="50%" cy="50%" r="72%"><stop offset=".4" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".96"/></radialGradient></defs>`
+      + `<rect width="${W}" height="${H}" fill="#fff"/>`
+      + `<path d="${edge}" stroke="#000" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
+      + `<g fill="none" stroke="#000" stroke-linecap="round">${hairs}</g>`
+      + `<path d="${dots}" stroke="#000" stroke-width="3" stroke-linecap="round"/><path d="${dots2}" stroke="#000" stroke-width="7" stroke-linecap="round"/>`
+      + layout.map((o, i) => eye(i, o)).join("")
+      + `<rect width="${W}" height="${H}" fill="url(#vg)"/></svg>`;
+  }
+
+  let cache = null;
+  return { get faceSVG() { return cache || (cache = build()); } };
 })();
 
 const Scare = (() => {
@@ -334,6 +520,7 @@ const Scare = (() => {
   function init() {
     root = $("#scare"); flood = $("#flood"); msg = $("#scareMsg"); again = $("#scareAgain");
     again.addEventListener("click", dismiss);
+    (window.requestIdleCallback || setTimeout)(() => Art.faceSVG);   // pre-draw the eyes while idle so the scare is instant
   }
 
   function run() {
